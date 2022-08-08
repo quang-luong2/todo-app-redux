@@ -6,10 +6,13 @@ const todoSlice = createSlice({
     reducers: {
         addTodo: (state, action) => {
             state.push(action.payload)
+        },
+        deleteTodo: (state, action) => {
+            state.splice(action.payload, 1)
         }
     }
 })
 
 const { reducer, actions } = todoSlice
-export const { addTodo } = actions
+export const { addTodo, deleteTodo } = actions
 export default reducer

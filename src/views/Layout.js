@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { addTodo } from "../redux/todoSlice";
+import { useEffect, useRef, useState } from "react";
+import { addTodo, deleteTodo } from "../redux/todoSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 function Layout() {
@@ -8,11 +8,24 @@ function Layout() {
     const dispatch = useDispatch()
     const todos = useSelector(state => state.todos)
 
+    useEffect(() => {
+        const elementInput = inputRef.current
+        
+        elementInput.onkeyup = (e) => {
+            if(e.which === 13) {
+                dispatch(addTodo(valueInput))
+                setValueInput('')
+                inputRef.current.focus()
+            }
+        }
+    }, [valueInput])
+
     const handleAddTodo = () => {
         dispatch(addTodo(valueInput))
         setValueInput('')
         inputRef.current.focus()
     }
+    
 
     return (
         <div className='todo'>
@@ -23,7 +36,7 @@ function Layout() {
                     className='mr-05' 
                     placeholder='Nhập tên công việc' 
                     value={valueInput}
-                    onChange={ (e) => setValueInput(e.target.value)}
+                    onChange={(e) => setValueInput(e.target.value)}
                     ref={inputRef}
                 />
                 <div 
@@ -46,7 +59,10 @@ function Layout() {
                                         <i className="fas fa-pen"></i>
                                         Sửa
                                     </div>
-                                    <div className='todo__btn todo__btn--delete'>
+                                    <div 
+                                        className='todo__btn todo__btn--delete'
+                                        onClick={() => dispatch(deleteTodo(index))}
+                                    >
                                         <i className="fas fa-trash-alt"></i>
                                         Xóa
                                     </div>
