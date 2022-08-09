@@ -1,32 +1,56 @@
 import { useEffect, useRef, useState } from "react";
-import { addTodo, deleteTodo } from "../redux/todoSlice";
+import { addTodo, deleteTodo, updateTodo } from "../redux/todoSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 function Layout() {
     const [ valueInput, setValueInput ] = useState('')
+    const [ statusUpdate, setStatusUpdate ] = useState(false)
+    const [ indexTodo, setIndexTodo ] = useState(0)
     const inputRef = useRef()
     const dispatch = useDispatch()
     const todos = useSelector(state => state.todos)
 
     useEffect(() => {
         const elementInput = inputRef.current
-        
+    
         elementInput.onkeyup = (e) => {
             if(e.which === 13) {
-                dispatch(addTodo(valueInput))
-                setValueInput('')
-                inputRef.current.focus()
+                if(statusUpdate === false) {
+                    dispatch(addTodo(valueInput))
+                    setValueInput('')
+                    inputRef.current.focus()
+                }
             }
         }
     }, [valueInput])
 
-    const handleAddTodo = () => {
-        dispatch(addTodo(valueInput))
+    const handleAddOrUpdate = () => {
+        if(statusUpdate) {
+            setStatusUpdate(false)
+            const newTodos = [...todos]
+            newTodos[indexTodo] = valueInput
+            dispatch(updateTodo({
+                index: indexTodo, 
+                name: newTodos[indexTodo]
+            }))
+        } else {
+            dispatch(addTodo(valueInput))
+        }
         setValueInput('')
         inputRef.current.focus()
     }
-    
 
+    const handleUpdateTodo = (index) => {
+        inputRef.current.focus()
+        setIndexTodo(index)
+        todos.map((todo, indexTodo) => {
+            if(index === indexTodo) {
+                setValueInput(todo)
+            }
+        })
+        setStatusUpdate(true)
+    }
+    
     return (
         <div className='todo'>
             <h3 className='todo__title'>Todo App</h3>
@@ -41,10 +65,10 @@ function Layout() {
                 />
                 <div 
                     className='todo__btn todo__btn--add'
-                    onClick={handleAddTodo}
+                    onClick={handleAddOrUpdate}
                 >
-                    <i className="fas fa-plus"></i>
-                    Thêm
+                    {statusUpdate ? <i className="fas fa-check"></i> : <i className="fas fa-plus"></i>}
+                    {statusUpdate ? 'Cập nhật' : 'Thêm'}
                 </div>
             </div>
             <div className='todo__list'>
@@ -55,7 +79,10 @@ function Layout() {
                                 <input type='checkbox' />
                                 <p className='todo__item__name'>{todo}</p>
                                 <div className='todo__actions'>
-                                    <div className='todo__btn todo__btn--update mr-05'>
+                                    <div 
+                                        className='todo__btn todo__btn--update mr-05'
+                                        onClick={() => handleUpdateTodo(index)}
+                                    >
                                         <i className="fas fa-pen"></i>
                                         Sửa
                                     </div>
